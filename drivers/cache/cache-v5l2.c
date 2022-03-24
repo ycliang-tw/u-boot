@@ -165,17 +165,23 @@ static int v5l2_probe(struct udevice *dev)
 		ctl_val |= (plat->dprefetch << DPREPETCH_OFF);
 	}
 
-	if (plat->tram_ctl[0] != -EINVAL) {
-		ctl_val &= ~(TRAMOCTL_MSK | TRAMICTL_MSK);
-		ctl_val |= plat->tram_ctl[0] << TRAMOCTL_OFF;
-		ctl_val |= plat->tram_ctl[1] << TRAMICTL_OFF;
-	}
-
-	if (plat->dram_ctl[0] != -EINVAL) {
-		ctl_val &= ~(DRAMOCTL_MSK | DRAMICTL_MSK);
-		ctl_val |= plat->dram_ctl[0] << DRAMOCTL_OFF;
-		ctl_val |= plat->dram_ctl[1] << DRAMICTL_OFF;
-	}
+	/* ram cycle settings */
+	/*
+	 * **Do NOT** change RAM cycle settings for Andes' EVB, but once you
+	 * you have done the integration, please uncomment the following and
+	 * do the proper setting for your platform.
+	 */
+//	if (plat->tram_ctl[0] != -EINVAL) {
+//		ctl_val &= ~(TRAMOCTL_MSK | TRAMICTL_MSK);
+//		ctl_val |= plat->tram_ctl[0] << TRAMOCTL_OFF;
+//		ctl_val |= plat->tram_ctl[1] << TRAMICTL_OFF;
+//	}
+//
+//	if (plat->dram_ctl[0] != -EINVAL) {
+//		ctl_val &= ~(DRAMOCTL_MSK | DRAMICTL_MSK);
+//		ctl_val |= plat->dram_ctl[0] << DRAMOCTL_OFF;
+//		ctl_val |= plat->dram_ctl[1] << DRAMICTL_OFF;
+//	}
 
 	writel(ctl_val, &regs->control);
 
