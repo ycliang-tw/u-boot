@@ -42,6 +42,8 @@ int cleanup_before_linux(void)
 		dcache_enable();
 #endif
 
+	enable_caches();
+
 	return 0;
 }
 

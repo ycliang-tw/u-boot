@@ -4,6 +4,8 @@
  * Rick Chen, Andes Technology Corporation <rick@andestech.com>
  */
 
+#include <asm/csr.h>
+#include <asm/sbi.h>
 #include <common.h>
 #include <cpu_func.h>
 #include <flash.h>
@@ -26,11 +28,23 @@ DECLARE_GLOBAL_DATA_PTR;
  * Miscellaneous platform dependent initializations
  */
 
+int misc_init_r(void)
+{
+	char *rv64cpu = "ax25", *rv32cpu = "a25";
+	long csr_marchid = 0;
+	u16 mask64 = 0x8000;
+#if CONFIG_IS_ENABLED(RISCV_SMODE)
+	csr_marchid = sbi_get_marchid();
+#elif CONFIG_IS_ENABLED(RISCV_MMODE)
+	csr_marchid = csr_read(CSR_MARCHID);
+#endif
+
+	return (csr_marchid & mask64)? env_set("cpu", rv64cpu) : env_set("cpu", rv32cpu);
+}
+
 int board_init(void)
 {
 	gd->bd->bi_boot_params = PHYS_SDRAM_0 + 0x400;
-
-	enable_caches();
 
 	return 0;
 }
