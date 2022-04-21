@@ -16,7 +16,6 @@
 
 /* MMISC control register */
 #define V5_MMISC_CTL_NON_BLOCKING_OFFSET		8
-
 #define V5_MMISC_CTL_NON_BLOCKING_EN			BIT(V5_MMISC_CTL_NON_BLOCKING_OFFSET)
 
 /* MCACHE control register */
@@ -54,19 +53,12 @@ int cleanup_before_linux(void)
 {
 	disable_interrupts();
 
-	/* turn off I/D-cache */
-#if !CONFIG_IS_ENABLED(RISCV_SMODE)
-	cache_flush();
-	icache_disable();
-	dcache_disable();
-#else
 	invalidate_icache_all();
 	if(!icache_status())
 		icache_enable();
 
 	if(!dcache_status())
 		dcache_enable();
-#endif
 
 	return 0;
 }
