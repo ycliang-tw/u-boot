@@ -5,6 +5,7 @@
  */
 
 #include <common.h>
+#include <cpu_func.h>
 #include <flash.h>
 #include <image.h>
 #include <init.h>
@@ -28,6 +29,8 @@ DECLARE_GLOBAL_DATA_PTR;
 int board_init(void)
 {
 	gd->bd->bi_boot_params = PHYS_SDRAM_0 + 0x400;
+
+	enable_caches();
 
 	return 0;
 }
@@ -57,56 +60,13 @@ ulong board_flash_get_legacy(ulong base, int banknum, flash_info_t *info)
 void *board_fdt_blob_setup(int *err)
 {
 	*err = 0;
-#if defined(CONFIG_OF_BOARD)
-	return (void *)(ulong)gd->arch.firmware_fdt_addr;
-#elif defined(CONFIG_OF_SEPARATE)
+	if (IS_ENABLED(CONFIG_OF_SEPARATE) || IS_ENABLED(CONFIG_OF_BOARD)) {
+		if (gd->arch.firmware_fdt_addr)
+			return (void *)(ulong)gd->arch.firmware_fdt_addr;
+	}
+
 	return (void *)CONFIG_SYS_FDT_BASE;
-#else
-	*err = -EINVAL;
-	return NULL;
-#endif
 }
-
-int smc_init(void)
-{
-	int node = -1;
-	const char *compat = "andestech,atfsmc020";
-	void *blob = (void *)gd->fdt_blob;
-	fdt_addr_t addr;
-	struct ftsmc020_bank *regs;
-
-	node = fdt_node_offset_by_compatible(blob, -1, compat);
-	if (node < 0)
-		return -FDT_ERR_NOTFOUND;
-
-	addr = fdtdec_get_addr_size_auto_noparent(blob, node,
-		"reg", 0, NULL, false);
-
-	if (addr == FDT_ADDR_T_NONE)
-		return -EINVAL;
-
-	regs = (struct ftsmc020_bank *)(uintptr_t)addr;
-	regs->cr &= ~FTSMC020_BANK_WPROT;
-
-	return 0;
-}
-
-static void v5l2_init(void)
-{
-	struct udevice *dev;
-
-	uclass_get_device(UCLASS_CACHE, 0, &dev);
-}
-
-#ifdef CONFIG_BOARD_EARLY_INIT_F
-int board_early_init_f(void)
-{
-	smc_init();
-	v5l2_init();
-
-	return 0;
-}
-#endif
 
 #ifdef CONFIG_SPL
 void board_boot_order(u32 *spl_boot_list)
