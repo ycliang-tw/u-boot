@@ -11,6 +11,9 @@ choice
 config TARGET_ANDES25_AE350
 	bool "Support andes25-ae350"
 
+config TARGET_ANDES45_AE350
+	bool "Support andes45-ae350"
+
 config TARGET_MICROCHIP_ICICLE
 	bool "Support Microchip PolarFire-SoC Icicle Board"
 
@@ -68,6 +71,7 @@ source "board/sipeed/maix/Kconfig"
 
 # platform-specific options below
 source "arch/riscv/cpu/andes25/Kconfig"
+source "arch/riscv/cpu/andes45/Kconfig"
 source "arch/riscv/cpu/fu540/Kconfig"
 source "arch/riscv/cpu/fu740/Kconfig"
 source "arch/riscv/cpu/generic/Kconfig"
