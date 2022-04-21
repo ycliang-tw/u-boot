@@ -83,7 +83,7 @@ static int v5l2_enable(struct udevice *dev)
 	return 0;
 }
 
-static int v5l2_disable(struct udevice *dev)
+static int v5l2_wbinval(struct udevice *dev)
 {
 	struct v5l2_plat *plat = dev_get_plat(dev);
 	volatile struct l2cache *regs = plat->regs;
@@ -99,8 +99,23 @@ static int v5l2_disable(struct udevice *dev)
 				hang();
 			}
 		}
-		clrbits_le32(&regs->control, L2_ENABLE);
 	}
+
+	return 0;
+}
+
+static int v5l2_disable(struct udevice *dev)
+{
+	struct v5l2_plat *plat = dev_get_plat(dev);
+	volatile struct l2cache *regs = plat->regs;
+	int ret = -ENXIO;
+
+	ret = v5l2_wbinval(dev);
+	if(ret)
+		return ret;
+
+	if ((regs) && (readl(&regs->control) & L2_ENABLE))
+		clrbits_le32(&regs->control, L2_ENABLE);
 
 	return 0;
 }
@@ -168,13 +183,14 @@ static int v5l2_probe(struct udevice *dev)
 }
 
 static const struct udevice_id v5l2_cache_ids[] = {
-	{ .compatible = "v5l2cache" },
+	{ .compatible = "cache" },
 	{}
 };
 
 static const struct cache_ops v5l2_cache_ops = {
 	.enable		= v5l2_enable,
 	.disable	= v5l2_disable,
+	.wbinval	= v5l2_wbinval,
 };
 
 U_BOOT_DRIVER(v5l2_cache) = {
